@@ -8,18 +8,18 @@
 EMP_BUILD_CONFIG( BoxConfig,
   GROUP(DEFAULT, "Default settings for box experiment"),
   VALUE(SEED, int, 0, "Random number seed (0 for based on time)"),
-  VALUE(POP_SIZE, uint32_t, 2000, "Number of organisms in the popoulation."),
+  VALUE(POP_SIZE, uint32_t, 5000, "Number of organisms in the popoulation."),
   VALUE(UPDATES, uint32_t, 10000, "How many generations should we process?"),
   VALUE(SELECTION, std::string, "TOURNAMENT", "What selection scheme should we use?"),
   VALUE(N_NEUTRAL, int, 0, "Number of neutral fitness functions"),
-  VALUE(N_GOOD, int, 0, "Number of good fitness functions"),
-  VALUE(N_BAD, int, 0, "Number of bad fitness functions"),
+  VALUE(N_GOOD, int, 7, "Number of good fitness functions"),
+  VALUE(N_BAD, int, 3, "Number of bad fitness functions"),
   VALUE(DISTANCE_CUTOFF, double, .1, "How close to origin does fitness gradient start"),
   VALUE(RESOURCE_INFLOW, double, 100, "How much resource enters the world each update"),
   VALUE(MUTATION_SIZE, double, .05, "Standard deviation of normal distribution mutations are seelcted from"),
   VALUE(PROBLEM_DIMENSIONS, int, 10, "How many axes does the box have?"),
   VALUE(RECOMBINATION, int, 0, "Does recombination happen?"),
-  VALUE(TOURNAMENT_SIZE, int, 20, "Tournament size"),
+  VALUE(TOURNAMENT_SIZE, int, 5, "Tournament size"),
   VALUE(COST, double, 0, "Cost of doing task unsuccessfully"),
   VALUE(FRAC, double, .0025, "Percent of resource individual can use"),
   VALUE(MAX_RES_USE, double, 5, "Maximum quantity of resource that individual can use")
@@ -188,15 +188,18 @@ public:
     }
 
     void RunStep() {
+
+        EliteSelect(*this);
+
         if (SELECTION == "TOURNAMENT") {
-            TournamentSelect(*this, TOURNAMENT_SIZE, POP_SIZE);
+            TournamentSelect(*this, TOURNAMENT_SIZE, POP_SIZE-1);
         } else if (SELECTION == "LEXICASE") {
             std::cout << "lex" << std::endl;
-            LexicaseSelect(*this, fit_set, POP_SIZE);
+            LexicaseSelect(*this, fit_set, POP_SIZE-1);
         } else if (SELECTION == "RESOURCE") {
-            ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST);
+            ResourceSelect(*this, fit_set, resources, TOURNAMENT_SIZE, POP_SIZE-1, FRAC, MAX_RES_USE, RESOURCE_INFLOW, COST);
         } else if (SELECTION == "ROULETTE") {
-            RouletteSelect(*this, POP_SIZE);
+            RouletteSelect(*this, POP_SIZE-1);
         } else {
             std::cout << "ERROR: INVALID SELECTION SCHEME: " << SELECTION << std::endl;
             exit(1);
@@ -206,7 +209,7 @@ public:
             return;
         }
 
-        DoMutations();
+        DoMutations(1);
         for (auto res : resources) {
             std::cout << res.GetAmount() << " ";
         }
